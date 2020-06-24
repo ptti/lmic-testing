@@ -1,0 +1,27 @@
+#!/bin/bash --login
+#$ -cwd
+
+RBM=${HOME}/lmic
+DATA=${RBM}/trajectories
+MODEL=testing-policies.ka
+KASIM="KaSim -mode batch -u time -p 1 --no-log"
+
+SAMPLE="${SGE_TASK_ID}"
+
+SCENARIO="${1}"; shift
+
+if test -z "${SCENARIO}"; then
+	echo "Usage: $0 scenario [perturbations]"
+	exit 255
+fi
+
+N=100000
+TMAX=365
+
+cd ${RBM}
+
+mkdir -p ${DATA}
+
+CMD="${KASIM} -seed ${SAMPLE} -o ${DATA}/scenario-${SCENARIO}-${SAMPLE}.dat -l ${TMAX} -var N ${N} ${VARS} scenario-${SCENARIO}.ka ${MODEL} $*"
+echo "${CMD}"
+$CMD

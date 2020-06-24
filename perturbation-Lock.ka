@@ -12,5 +12,5 @@
 // positive tests falls below a threshold
 %mod: alarm 1 testPositive < 0.01 do
     $UPDATE c 6.5;
-    $PRINT ("%%% - time=".[T]." c=".c)
+    $PRINT ("%%% - time=".[T]." c=".c);
   repeat [true]

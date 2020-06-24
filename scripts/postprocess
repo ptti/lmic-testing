@@ -1,0 +1,8 @@
+
+SCENARIOS=`ls scenario-*.ka | sed -e 's/.ka$//'`
+
+for s in $SCENARIOS; do
+	python scripts/combine.py -d, -k -o ${s} -i trajectories/${s}-*
+#	python scripts/case-plot.py $s
+	break
+done

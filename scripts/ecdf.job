@@ -1,5 +1,7 @@
 #!/bin/bash --login
 #$ -cwd
+#$ -l h_vmem=2G
+#$ -N lmic
 
 RBM=${HOME}/lmic
 DATA=${RBM}/trajectories

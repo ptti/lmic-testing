@@ -1,5 +1,0 @@
-%var: p_iso	0.25 // else isolate all if {trigger value for lockdown?}
-%var: k_result	12
-%var: thetaI	1
-%var: thetaD	0
-%var: eta	0.45

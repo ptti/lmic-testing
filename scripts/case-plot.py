@@ -7,11 +7,7 @@ import os
 
 colours = [mcolors.to_rgb(c) for c in mcolors.TABLEAU_COLORS.values()]
 
-case = int(argv[1])
-base = "lmic-case-{}".format(case)
-
-cases = pd.read_csv("lmic-cases.tsv", delimiter="\t")
-
+base = argv[1]
 
 avg = pd.read_csv(base + "-avg.tsv", delimiter="\t")
 std = pd.read_csv(base + "-std.tsv", delimiter="\t")
@@ -51,13 +47,13 @@ plot(ax_c, "Cr", "C(x{r})", colours[3])
 plot(ax_c, "Cf", "C(x{f})", colours[4])
 ax_c.set_title("Tracing events")
 
-plot(ax_tb, "Tbusy", "T([_])", colours[0])
+plot(ax_tb, "Tbusy", "T(u[_])", colours[0])
 ax_tb.set_title("Tests pending")
 
-plot(ax_t, "T", "T()", colours[1])
-ax_t.set_title("Tests avail")
+plot(ax_t, "Tused", "T(u{y})", colours[1])
+ax_t.set_title("Tests used")
 
-plot(ax_tr, "R", "Tr()", colours[0])
+plot(ax_tr, "Tr", "Tr()", colours[0])
 ax_tr.set_title("Individuals traced")
 
 for ax in axes.flatten():
@@ -66,8 +62,7 @@ for ax in axes.flatten():
     ax.legend()
 
 
-cdesc = cases.loc[lambda row: row["case"] == case-1]
-title = "        ".join("{}: {}".format(c, cdesc[c].iloc[0]) for c in cdesc.columns)
+title = " ".join(base.split("-")[-1].split("."))
 fig.suptitle(title)
 
 plt.savefig("{}.png".format(base))

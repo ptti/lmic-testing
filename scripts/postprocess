@@ -1,8 +1,8 @@
 
-SCENARIOS=`ls scenario-*.ka | sed -e 's/.ka$//'`
+SCENARIOS=`ls trajectories/scenario-*.dat | sed -e 's/^.*scenario-/scenario-/' -e 's/-[0-9][0-9]*.dat$//' | sort | uniq `
 
 for s in $SCENARIOS; do
+	echo $s
 	python scripts/combine.py -d, -k -o ${s} -i trajectories/${s}-*
-#	python scripts/case-plot.py $s
-	break
+	python scripts/case-plot.py $s
 done

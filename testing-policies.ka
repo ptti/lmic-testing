@@ -20,8 +20,8 @@
 %var: p_flu  d_flu*k_flu // prevalence of flu
 %var: theta  thetaD + thetaI - thetaD*thetaI
 %var: m      0.1*N    // rate of manufacturing tests
-%var: r      1.0      // recall - true positives per positive
-%var: s      1.0      // specificity - true negatives per negative
+%var: r      0.9      // recall - true positives per positive
+%var: s      0.97     // specificity - true negatives per negative
 
 ////
 //// These five parameters are set in specific scenario files
@@ -184,6 +184,7 @@
 %obs: T     |T()|
 %obs: Tbusy |T(u[_])|
 %obs: Tused |T(u{y})|
+%obs: contact     c
 
 // initially infectious
 %var: INIT_I 0.001*N

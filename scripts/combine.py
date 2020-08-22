@@ -34,7 +34,7 @@ if __name__ == '__main__':
     if args.kappa:
         load = load_kappa
         headrow = head_kappa(args.input[0], delimiter=args.delimiter)
-        head = "\t".join(["t"] + headrow[1:])
+        head = "\t".join(["t"] + [h if h != "6.5" else "c" for h in headrow[1:]])
     else:
         load = np.loadtxt
         head = None

@@ -1,0 +1,56 @@
+\documentclass{amsart}
+\usepackage{pdflscape}
+\usepackage{literate}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\newcommand{\plonk}[1]{%
+  \begin{tikzpicture}[overlay]
+    \node at (10.5,-5) { \includegraphics[width=1.1\paperheight]{#1} };
+  \end{tikzpicture}%
+  \clearpage
+}
+
+\lstset{language=kappa}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+\begin{landscape}
+
+  \lstinputlisting{scenario-NoTrace.NoTests.ka}\clearpage
+  \plonk{{scenario-NoTrace.NoTests.Lock}.png}
+  \plonk{{scenario-NoTrace.NoTests}.png}
+
+  \lstinputlisting{scenario-NoTrace.NoTests.Diagnose.ka}\clearpage
+  \plonk{{scenario-NoTrace.NoTests.Diagnose.Lock}.png}
+  \plonk{{scenario-NoTrace.NoTests.Diagnose}.png}
+
+  \lstinputlisting{scenario-NoTrace.Tests.ka}\clearpage
+  \plonk{{scenario-NoTrace.Tests.Lock}.png}
+  \plonk{{scenario-NoTrace.Tests}.png}
+
+  \lstinputlisting{scenario-NoTrace.Tests.Diagnose.ka}\clearpage
+  \plonk{{scenario-NoTrace.Tests.Diagnose.Lock}.png}
+  \plonk{{scenario-NoTrace.Tests.Diagnose}.png}
+
+  \lstinputlisting{scenario-Trace.Tests.ka}\clearpage
+  \plonk{{scenario-Trace.Tests.Lock}.png}
+  \plonk{{scenario-Trace.Tests}.png}
+
+  \lstinputlisting{scenario-Trace.FastTests.ka}\clearpage
+  \plonk{{scenario-Trace.FastTests.Lock}.png}
+  \plonk{{scenario-Trace.FastTests}.png}
+
+  \lstinputlisting{scenario-Trace.Tests.Diagnose.ka}\clearpage
+  \plonk{{scenario-Trace.Tests.Diagnose.Lock}.png}
+  \plonk{{scenario-Trace.Tests.Diagnose}.png}
+
+  \lstinputlisting{scenario-Trace.NoTests.ka}\clearpage
+  \plonk{{scenario-Trace.NoTests.Lock}.png}
+  \plonk{{scenario-Trace.NoTests}.png}
+
+  \lstinputlisting{testing-policies.ka}
+  \lstinputlisting{perturbation-Lock.ka}
+\end{landscape}
+\end{document}
+

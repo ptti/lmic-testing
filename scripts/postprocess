@@ -4,5 +4,6 @@ SCENARIOS=`ls trajectories/scenario-*.dat | sed -e 's/^.*scenario-/scenario-/' -
 for s in $SCENARIOS; do
 	echo $s
 	python scripts/combine.py -d, -k -o ${s} -i trajectories/${s}-*
+	python scripts/rseries.py -i ${s}-avg.tsv -o ${s}-R.tsv
 	python scripts/case-plot.py $s
 done

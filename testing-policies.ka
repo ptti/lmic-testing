@@ -23,7 +23,6 @@
 %var: r_low	0.6		// recall - true positives per positives for low viral load
 %var: r_high	0.98		// recall - true positives per positives for high viral load
 %var: load_low	0.5		// fraction of infections with low viral load
-%var: load_high 1.0 - load_low	// fraction of infections with high viral load 
 
 ////
 //// These parameters are set in specific scenario files
@@ -90,7 +89,7 @@
 // 2 - progression of individuals to infectiousness. exposed individuals
 //     become infectious, at first prodromic, and should test positively
 'prog_pro_low'   P(x{e/i}, c{#/p}, v{#/l}, t{n/y})  @ load_low*k_pro
-'prog_pro_high'  P(x{e/i}, c{#/p}, v{#/h}, t{n/y})  @ load_high*k_pro
+'prog_pro_high'  P(x{e/i}, c{#/p}, v{#/h}, t{n/y})  @ (1-load_low)*k_pro
 
 // 3 - progression to asymptomatic for a fraction of prodromic individuals
 'prog_asym_low'  P(x{i}, c{p/a}, v{l}) @ k_inf*p_asym*(1-p_low)

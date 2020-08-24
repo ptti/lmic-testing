@@ -1,0 +1,8 @@
+//
+// Assumption Set Zero: Viral Load not related to either symptoms or infectiousness
+//
+%var:	beta		0.034           // probability of infection from contact
+%var:	beta_low	beta		// infectiousness for low viral load people
+%var:	beta_high	beta		// infectiousness for high viral load people
+%var:	p_low           0.5		// chance of low viral load people developing symptoms
+%var:	p_high		0.5		// chance of high viral load people developing symptoms

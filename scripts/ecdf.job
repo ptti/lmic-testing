@@ -1,6 +1,6 @@
 #!/bin/bash --login
 #$ -cwd
-#$ -l h_vmem=2G
+#$ -l h_vmem=4G
 #$ -N lmic
 
 RBM=${HOME}/lmic
@@ -26,7 +26,7 @@ done
 OUTPUT="${OUTPUT}-${SAMPLE}.dat"
 
 N=100000
-TMAX=365
+TMAX=730
 
 cd ${RBM}
 

@@ -1,0 +1,48 @@
+import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--ifr", default=0.011, type=float)
+parser.add_argument("TraceTest")
+parser.add_argument("NoTraceNoTest")
+parser.add_argument("NoTraceNoTestLock")
+
+cm = dict((c, n) for n, c in enumerate(("t", "Sn", "En", "In", "Rn", "Sy", "Ey", "Iy", "Ry", "F", "Cs", "Ce", "Ci", "Cr", "Cf", "Tr", "T", "Tbusy", "Tused", "c")))
+
+args = parser.parse_args()
+
+avg = {
+  "tt": np.loadtxt(args.TraceTest + "-avg.tsv", skiprows=1),
+  "ntnt": np.loadtxt(args.NoTraceNoTest + "-avg.tsv", skiprows=1),
+  "lock": np.loadtxt(args.NoTraceNoTestLock + "-avg.tsv", skiprows=1),
+}
+
+def total_infections(data, t=365):
+    return sum(data[t,cm[c]] for c in ("En", "Ey", "In", "Iy", "Rn", "Ry"))
+def deaths(data):
+    return args.ifr*(data[:,cm["Rn"]] + data[:,cm["Ry"]])
+def days_lost(data, t=365):
+    return sum(sum(data[:t,cm[c]] for c in ("Sy", "Ey", "Iy", "Ry"))) - sum(args.ifr*data[:t,cm["Ry"]])
+def tests(data, t=365):
+    return data[t,cm["Tused"]]
+def N(data):
+    return sum(data[0,cm[c]] for c in ("Sn", "En", "In", "Rn", "Sy", "Ey", "Iy", "Ry"))
+
+def report(data):
+    infections = dict((k, total_infections(data[k])) for k in data.keys())
+    print("Total infections:", infections)
+    
+    total_deaths = dict((k, deaths(data[k])[365]) for k in data.keys())
+    print("Total deaths:", total_deaths)
+    
+    days = dict((k, days_lost(data[k])) for k in data.keys())
+    print("Days lost:", days)
+    
+    tests_used = dict((k, tests(data[k])) for k in data.keys())
+    print("Tests used:", tests_used)
+
+    print("Deaths averted from TTI:", total_deaths["ntnt"] - total_deaths["tt"], "or %.1f%%" % (100*(total_deaths["ntnt"] - total_deaths["tt"])/total_deaths["ntnt"]))
+    print("Cost of TTI:", tests_used["tt"] - tests_used["ntnt"], "tests, or", (tests_used["tt"] - tests_used["ntnt"])/N(avg["tt"]), "tests per head")
+    print("Deaths averted from lockdown:", total_deaths["ntnt"] - total_deaths["lock"], "or %.1f%%" % (100*(total_deaths["ntnt"] - total_deaths["lock"])/total_deaths["ntnt"]))
+
+report(avg)

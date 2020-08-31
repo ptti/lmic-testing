@@ -1,0 +1,8 @@
+rm -f results.txt
+for assumption in Zero One Two Three; do
+    for tests in "" Slow Med; do
+        echo "Assumption set ${assumption} with ${tests} testing regime" >> results.txt
+        python scripts/summarise scenario-${tests}Trace.${tests}Tests-Hallett-${assumption} scenario-NoTrace.NoTests-Hallett-${assumption} scenario-NoTrace.NoTests-Hallett-${assumption}.Lock >> results.txt
+        echo >> results.txt
+    done
+done

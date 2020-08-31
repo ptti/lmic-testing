@@ -23,6 +23,8 @@ def deaths(data):
     return args.ifr*(data[:,cm["Rn"]] + data[:,cm["Ry"]])
 def days_lost(data, t=365):
     return sum(sum(data[:t,cm[c]] for c in ("Sy", "Ey", "Iy", "Ry"))) - sum(args.ifr*data[:t,cm["Ry"]])
+def avoidable_days_lost(data, t=365):
+    return sum(sum(data[:t,cm[c]] for c in ("Sy", "Ry"))) - sum(args.ifr*data[:t,cm["Ry"]])
 def tests(data, t=365):
     return data[t,cm["Tused"]]
 def N(data):
@@ -37,6 +39,9 @@ def report(data):
     
     days = dict((k, days_lost(data[k])) for k in data.keys())
     print("Days lost:", days)
+
+    adays = dict((k, avoidable_days_lost(data[k])) for k in data.keys())
+    print("Avoidable days lost:", adays)
     
     tests_used = dict((k, tests(data[k])) for k in data.keys())
     print("Tests used:", tests_used)

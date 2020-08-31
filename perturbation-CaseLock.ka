@@ -1,13 +1,13 @@
 // this perturbation changes the contact rate when the number of
 // cases rises above a threshold
-%mod: alarm 1 |P(s{i})| > 50 do
+%mod: alarm 1 |P(x{i})| > 50 do
     $UPDATE c 3.0;
     $PRINT ("%%% - time=".[T]." c=".c);
   repeat [true]
 
 // this perturbation changes the contact rate when the number of
 // cases falls below a threshold
-%mod: alarm 1 |P(s{i})| < 15 do
+%mod: alarm 1 |P(x{i})| < 15 do
     $UPDATE c 6.5;
     $PRINT ("%%% - time=".[T]." c=".c);
   repeat [true]

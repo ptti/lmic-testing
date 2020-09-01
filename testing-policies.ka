@@ -71,8 +71,10 @@
 'infection_high'  P(x{s}, q{n}), P(x{i}, v{h}, q{n}), . ->
                   P(x{e}, q{n}), P(x{i}, v{h}, q{n}), C(x{e})   @ beta_high*c/N
 
-'lucky'       P(x{s}, q{n}), P(x{i}, q{n}), . ->
-              P(x{s}, q{n}), P(x{i}, q{n}), C(x{s})   @ (1-beta)*c/N
+'lucky_low'       P(x{s}, q{n}), P(x{i}, v{l}, q{n}), . ->
+                  P(x{s}, q{n}), P(x{i}, v{l}, q{n}), C(x{s})   @ (1-beta_high)*c/N
+'lucky_high'      P(x{s}, q{n}), P(x{i}, v{h}, q{n}), . ->
+                  P(x{s}, q{n}), P(x{i}, v{h}, q{n}), C(x{s})   @ (1-beta_high)*c/N
 
 'exposed'     P(x{e}, q{n}), P(x{i}, q{n}), . ->
               P(x{e}, q{n}), P(x{i}, q{n}), C(x{e})   @ c/N

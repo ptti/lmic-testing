@@ -10,11 +10,13 @@
 %var: k_pro	1.0/4		// progression from exposed to prodromic
 %var: k_inf	1.0		// progression from prodromic to full disease
 %var: p_asym	0.5		// probability of being asymptomatic
+%var: p_sym	1.0-p_asym	// probability of being symptomatic
 %var: k_rem	1.0/7		// removal by recovery or death
 %var: k_iso	12		// rate of isolation -- within 2 hours
 %var: k_exit	1.0/14		// rate of leaving isolation
 %var: k_retest	1.0/14		// rate of allowing retesting
 %var: k_flu	1.0/365		// rate of getting the flu, once per year
+%var: k_death   1.0/14          // rate of dying from critical illness
 %var: d_flu	7		// duration of flu
 %var: p_flu	d_flu*k_flu // prevalence of flu
 %var: theta	thetaD + thetaI - thetaD*thetaI
@@ -23,6 +25,7 @@
 %var: r_low	0.6		// recall - true positives per positives for low viral load
 %var: r_high	0.98		// recall - true positives per positives for high viral load
 %var: load_low	0.5		// fraction of infections with low viral load
+%var: ifr       0.005           // infection fatality rate
 
 ////
 //// These parameters are set in specific scenario files
@@ -52,7 +55,8 @@
 //   - q isolation status
 //   - f infected with the flu, or not
 //   - i prone to self-isolation or not
-%agent: P(x{s e i r} c{p a s} v{l h} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n})
+//   - o outcome - recovered or dying
+%agent: P(x{s e i r} c{p a s} v{l h} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n} o{r c d})
 // tests are discrete entities and may be scarce, when being used,
 // they are bound to an individual, and are used or not
 %agent: T(u{y n})
@@ -102,12 +106,17 @@
 'prog_sym_high'   P(x{i}, c{p/s}, v{h}, s{#/y}) @ k_inf*(1-p_asym)*p_high
 
 // 5 - removal of asymptomatic individuals, no longer test positively
-'rem_asym'    P(x{i/r}, c{a}, t{y/n}) @ k_rem
-// 6 - removal of symptomatic individuals, no longer test positively
-'rem_sym'     P(x{i/r}, c{s}, t{y/n}, s{y/n}) @ k_rem
+'rem_asym'    P(x{i/r}, c{a}, t{y/n}, o{#/r}) @ k_rem
+// 6 - removal of symptomatic individuals, no longer test positively, and recover
+'rem_sym_r'   P(x{i/r}, c{s}, t{y/n}, s{y/n}, o{#/r}) @ (1-ifr/p_sym) * k_rem
+// 7 - removal of symptomatic individuals who will not recover and remain critically ill
+'rem_sym_c'   P(x{i/r}, c{s}, s{y}, o{#/c}) @ ifr/p_sym*k_rem
 
 // 7 - development and clearing of endemic flu symptoms
 'flu_dev'     P(f{n}, s{n}) <-> P(f{y}, s{y}) @ k_flu, 1/d_flu
+
+// 8 - progression to death for those that do not recover
+'death'       P(o{c/d}) @ k_death
 
 ////
 //// II. Rules relating to testing
@@ -191,6 +200,7 @@
 %obs: Ey    |P(x{e}, q{y})|
 %obs: Iy    |P(x{i}, q{y})|
 %obs: Ry    |P(x{r}, q{y})|
+%obs: M     |P(o{d})|
 %obs: F     |P(f{y})|
 %obs: Cs    |C(x{s})|
 %obs: Ce    |C(x{e})|

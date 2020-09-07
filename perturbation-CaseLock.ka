@@ -1,13 +1,19 @@
+// this is the time of lockdown, set to a value far into the future,
+// beyond the end of the simulation
+%var: tlock 100000
+
 // this perturbation changes the contact rate when the number of
 // cases rises above a threshold
 %mod: alarm 1 |P(x{i})| > 50 do
     $UPDATE c 3.0;
+    $UPDATE tlock [T];
     $PRINT ("%%% - time=".[T]." c=".c);
   repeat [true]
 
-// this perturbation changes the contact rate when the number of
-// cases falls below a threshold
-%mod: alarm 1 |P(x{i})| < 15 do
+// this perturbation changes the contact rate when a certain time
+// has passed since lockdown
+%mod: alarm 1 ([T] - tlock) > 21 do
     $UPDATE c 6.5;
+    $UPDATE tlock 100000; // set tlock far into the future
     $PRINT ("%%% - time=".[T]." c=".c);
   repeat [true]

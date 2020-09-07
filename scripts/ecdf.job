@@ -21,9 +21,18 @@ VARS="$*"
 
 OUTPUT="${DATA}/scenario-${SCENARIO}-${ASSUMPTIONS}"
 PERTURBATIONS=""
-for p in $*; do
-	PERTURBATIONS="${PERTURBATIONS} perturbation-${p}.ka"
-	OUTPUT="${OUTPUT}.${p}"
+while $# -gt 0; do
+	p="$1"
+	case "${p}" in
+		-*)
+			break
+			;;
+		*)
+			PERTURBATIONS="${PERTURBATIONS} perturbation-${p}.ka"
+			OUTPUT="${OUTPUT}.${p}"
+			shift
+			;;
+	esac
 done
 OUTPUT="${OUTPUT}-${SAMPLE}.dat"
 

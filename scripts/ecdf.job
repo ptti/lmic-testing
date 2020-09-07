@@ -2,6 +2,8 @@
 #$ -cwd
 #$ -l h_vmem=4G
 #$ -N lmic
+#$ -e logs/${JOB_NAME}.e${JOB_ID}.${TASK_ID}.${HOSTNAME}
+#$ -o logs/${JOB_NAME}.o${JOB_ID}.${TASK_ID}.${HOSTNAME}
 
 RBM=${HOME}/lmic
 MODEL=testing-policies.ka

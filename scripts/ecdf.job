@@ -4,18 +4,20 @@
 #$ -N lmic
 
 RBM=${HOME}/lmic
-DATA=${RBM}/trajectories
 MODEL=testing-policies.ka
 KASIM="KaSim -mode batch -u time -p 1 --no-log"
 
 SAMPLE="${SGE_TASK_ID}"
 
+SET="${1}"; shift
+DATA=${RBM}/trajectories-${SET}
 SCENARIO="${1}"; shift
 ASSUMPTIONS="${1}"; shift
 if test -z "${SCENARIO}" -o -z "${ASSUMPTIONS}"; then
 	echo "Usage: $0 scenario assumptions [perturbations]"
 	exit 255
 fi
+VARS="$*"
 
 OUTPUT="${DATA}/scenario-${SCENARIO}-${ASSUMPTIONS}"
 PERTURBATIONS=""

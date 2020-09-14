@@ -33,12 +33,14 @@ ax_e.set_title("Exposed")
 
 plot(ax_i, "Iy", "P(x{i}, q{y})", colours[0])
 plot(ax_i, "In", "P(x{i}, q{n})", colours[1])
-plot(ax_i, "F", " P(f{y})", colours[3])
+plot(ax_i, "F", "P(f{y})", colours[3])
+plot(ax_i, "H", "P(o{c})", colours[4])
 ax_i.set_title("Infectious")
 
 plot(ax_r, "Rn", "P(x{r}, q{n})", colours[0])
 plot(ax_r, "Ry", "P(x{r}, q{y})", colours[1])
-ax_r.set_title("Removed")
+plot(ax_r, "M",  "P(o{d})", colours[2])
+ax_r.set_title("Removed / Dead")
 
 plot(ax_c, "Cs", "C(x{s})", colours[0])
 plot(ax_c, "Ce", "C(x{e})", colours[1])

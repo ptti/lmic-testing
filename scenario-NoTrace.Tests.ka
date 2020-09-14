@@ -1,5 +1,5 @@
 %var: p_iso	0.25
 %var: k_result	0.5
 %var: thetaI	1
-%var: thetaD	0
+%var: thetaS	0
 %var: eta	0

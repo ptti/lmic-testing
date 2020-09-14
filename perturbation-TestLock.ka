@@ -1,8 +1,8 @@
 // count the proportion of positive ttests
-%var: testPositive |P(t{y})| / (|P(t{y})| + |P(t{n})|)
+%var: testPositive |P(r{y})| / (|P(r{y})| + |P(r{n})|)
 
 %mod: alarm 1 [true] do
-    $UPDATE testPositive |P(t{y})| / (|P(t{y})| + |P(t{n})|)
+    $UPDATE testPositive |P(r{y})| / (|P(r{y})| + |P(r{n})|);
   repeat [true]
 
 // this perturbation changes the contact rate when the proportion of 

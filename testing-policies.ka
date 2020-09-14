@@ -19,7 +19,7 @@
 %var: k_death   1.0/14          // rate of dying from critical illness
 %var: d_flu	7		// duration of flu
 %var: p_flu	d_flu*k_flu // prevalence of flu
-%var: theta	thetaD + thetaI - thetaD*thetaI
+%var: theta	thetaS + thetaI - thetaS*thetaI
 %var: m		0.1*N		// rate of manufacturing tests
 %var: s		1.0		// specificity - true negatives per negative
 %var: r_low	0.6		// recall - true positives per positives for low viral load
@@ -35,7 +35,7 @@
 // %var: beta_low  beta     // infectiousness for low viral load people
 // %var: beta_high beta     // infectiousness for high viral load people
 // %var: k_result  1.0      // time to get test result
-// %var: thetaD    0.0      // rate of clinical diagnosis
+// %var: thetaS    0.0      // rate of surveillance testing
 // %var: thetaI    1.0      // rate of testing of isolated population
 // %var: eta       0.45     // trace 90% of contacts in two days
 // %var: p_low     0.0      // chance of low viral load people developing symptoms
@@ -125,8 +125,8 @@
 // manufacturing and disposal of tests
 'manufacturing' . -> T(u[.]{n}) @ m
 
-// 1 - clinically diagnose those symptomatic
-'clinical'    P(s{y}, r{x/y}) @ thetaD
+// 1 - test randomly selected individuals
+'surveillance'  P(r{x}, t[.]), T(u[.]{n}) -> P(r{x}, t[1]), T(u[1]{y}) @ thetaS
 
 // 2 - test those who have been isolated and are untested
 'isolated'    P(q{y}, r{x}, t[.]), T(u[.]{n}) -> P(q{y}, r{x}, t[1]), T(u[1]{y}) @ thetaI
@@ -212,6 +212,8 @@
 %obs: T     |T()|
 %obs: Tbusy |T(u[_])|
 %obs: Tused |T(u{y})|
+%obs: Tpos  |P(r{y})|
+%obs: Tneg  |P(r{n})|
 %obs: contact     c
 
 // initially infectious

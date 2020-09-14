@@ -5,17 +5,25 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--ifr", default=0.011, type=float)
 parser.add_argument("TraceTest")
 parser.add_argument("NoTraceNoTest")
-parser.add_argument("NoTraceNoTestLock")
+parser.add_argument("NoTraceNoTestLock", default=None, nargs="?")
 
-cm = dict((c, n) for n, c in enumerate(("t", "Sn", "En", "In", "Rn", "Sy", "Ey", "Iy", "Ry", "F", "Cs", "Ce", "Ci", "Cr", "Cf", "Tr", "T", "Tbusy", "Tused", "c")))
+cm = dict((c, n) for n, c in enumerate(("t", "Sn", "En", "In", "Rn", "Sy", "Ey", "Iy", "Ry", "H", "M", "F", "Cs", "Ce", "Ci", "Cr", "Cf", "Tr", "T", "Tbusy", "Tused", "c")))
 
 args = parser.parse_args()
 
 avg = {
   "tt": np.loadtxt(args.TraceTest + "-avg.tsv", skiprows=1),
   "ntnt": np.loadtxt(args.NoTraceNoTest + "-avg.tsv", skiprows=1),
-  "lock": np.loadtxt(args.NoTraceNoTestLock + "-avg.tsv", skiprows=1),
 }
+if args.NoTraceNoTestLock is not None:
+  avg["lock"] = np.loadtxt(args.NoTraceNoTestLock + "-avg.tsv", skiprows=1)
+
+std = {
+  "tt": np.loadtxt(args.TraceTest + "-std.tsv", skiprows=1),
+  "ntnt": np.loadtxt(args.NoTraceNoTest + "-std.tsv", skiprows=1),
+}
+if args.NoTraceNoTestLock is not None:
+  std["lock"] = np.loadtxt(args.NoTraceNoTestLock + "-std.tsv", skiprows=1)
 
 def total_infections(data, t=365):
     return sum(data[t,cm[c]] for c in ("En", "Ey", "In", "Iy", "Rn", "Ry"))
@@ -30,25 +38,65 @@ def tests(data, t=365):
 def N(data):
     return sum(data[0,cm[c]] for c in ("Sn", "En", "In", "Rn", "Sy", "Ey", "Iy", "Ry"))
 
-def report(data):
+def ppdev(data, dmin, dplus):
+    for k in sorted(data.keys()):
+        print("\t{}: {:.0f} [{:.0f}] {:.0f}".format(k, dmin[k], data[k], dplus[k]))
+
+def report(data, dev):
     infections = dict((k, total_infections(data[k])) for k in data.keys())
-    print("Total infections:", infections)
+    print("Total infections:")
+    ppdev(infections, dict((k, total_infections(data[k] - dev[k])) for k in data.keys()), dict((k, total_infections(data[k] + dev[k])) for k in data.keys()))
     
     total_deaths = dict((k, deaths(data[k])[365]) for k in data.keys())
-    print("Total deaths:", total_deaths)
+    total_deaths_min = dict((k, deaths(data[k] + dev[k])[365]) for k in data.keys())
+    total_deaths_plus = dict((k, deaths(data[k] - dev[k])[365]) for k in data.keys())
+    print("Total deaths:")
+    ppdev(total_deaths, total_deaths_min, total_deaths_plus)
     
     days = dict((k, days_lost(data[k])) for k in data.keys())
-    print("Days lost:", days)
+    print("Days lost:")
+    ppdev(days, dict((k, days_lost(data[k] - dev[k])) for k in data.keys()), dict((k, days_lost(data[k] + dev[k])) for k in data.keys()))
 
     adays = dict((k, avoidable_days_lost(data[k])) for k in data.keys())
-    print("Avoidable days lost:", adays)
+    print("Avoidable days lost:")
+    ppdev(adays, dict((k, avoidable_days_lost(data[k] - dev[k])) for k in data.keys()), dict((k, avoidable_days_lost(data[k] + dev[k])) for k in data.keys()))
     
+    tests_used_min = dict((k, tests(data[k] - dev[k])) for k in data.keys())
     tests_used = dict((k, tests(data[k])) for k in data.keys())
-    print("Tests used:", tests_used)
+    tests_used_plus = dict((k, tests(data[k] + dev[k])) for k in data.keys())
+    print("Tests used:")
+    ppdev(tests_used, tests_used_min, tests_used_plus)
 
-    print("Deaths averted from TTI:", total_deaths["ntnt"] - total_deaths["tt"], "or %.1f%%" % (100*(total_deaths["ntnt"] - total_deaths["tt"])/total_deaths["ntnt"]))
-    print("Cost of TTI:", tests_used["tt"] - tests_used["ntnt"], "tests, or", (tests_used["tt"] - tests_used["ntnt"])/N(avg["tt"]), "tests per head")
-    print("Deaths averted from lockdown:", total_deaths["ntnt"] - total_deaths["lock"], "or %.1f%%" % (100*(total_deaths["ntnt"] - total_deaths["lock"])/total_deaths["ntnt"]))
+    print("Deaths averted from TTI: {:.0f} [{:.0f}] {:.0f}".format(
+         total_deaths_min["ntnt"] - total_deaths_min["tt"],
+         total_deaths["ntnt"] - total_deaths["tt"],
+         total_deaths_plus["ntnt"] - total_deaths_plus["tt"]
+    ))
+    print("Deaths averted from TTI (pct): {:.2f}% [{:.2f}%] {:.2f}%".format(
+         (100*(total_deaths_min["ntnt"] - total_deaths_min["tt"])/total_deaths_min["ntnt"]),
+         (100*(total_deaths["ntnt"] - total_deaths["tt"])/total_deaths["ntnt"]),
+         (100*(total_deaths_plus["ntnt"] - total_deaths_plus["tt"])/total_deaths_plus["ntnt"])
+    ))
 
-    print("Tests per death averted:", (tests_used["tt"] - tests_used["ntnt"])/(total_deaths["ntnt"] - total_deaths["tt"]))
-report(avg)
+    print("Cost of TTI: {:.0f} [{:.0f}] {:.0f}".format(
+         tests_used_min["tt"] - tests_used_min["ntnt"],
+         tests_used["tt"] - tests_used["ntnt"],
+         tests_used_plus["tt"] - tests_used_plus["ntnt"]
+    ))
+
+    print("Costs of TTI - tests per head: {:.2f} [{:.2f}] {:.2f}".format(
+         (tests_used_min["tt"] - tests_used_min["ntnt"])/N(avg["tt"]),
+         (tests_used["tt"] - tests_used["ntnt"])/N(avg["tt"]),
+         (tests_used_plus["tt"] - tests_used_plus["ntnt"])/N(avg["tt"])
+    ))
+
+    if args.NoTraceNoTestLock is not None:
+        print("Deaths averted from lockdown:", total_deaths["ntnt"] - total_deaths["lock"], "or %.1f%%" % (100*(total_deaths["ntnt"] - total_deaths["lock"])/total_deaths["ntnt"]))
+
+    print("Tests per death averted: {:.0f} [{:.0f}] {:.0f}".format(
+        (tests_used_min["tt"] - tests_used_min["ntnt"])/(total_deaths_min["ntnt"] - total_deaths_min["tt"]),
+        (tests_used["tt"] - tests_used["ntnt"])/(total_deaths["ntnt"] - total_deaths["tt"]),
+        (tests_used_plus["tt"] - tests_used_plus["ntnt"])/(total_deaths_plus["ntnt"] - total_deaths_plus["tt"])
+    ))
+
+report(avg, std)

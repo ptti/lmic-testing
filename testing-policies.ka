@@ -5,35 +5,32 @@
 //// exception of N which is typically overridden for larger 
 //// simulations
 ////
-%var: N		10000		// total population
-%var: c		6.5		// contact rate
-%var: k_pro	1.0/4		// progression from exposed to prodromic
-%var: k_inf	1.0		// progression from prodromic to full disease
-%var: p_asym	0.5		// probability of being asymptomatic
-%var: p_sym	1.0-p_asym	// probability of being symptomatic
-%var: k_rem	1.0/7		// removal by recovery or death
-%var: k_iso	12		// rate of isolation -- within 2 hours
-%var: k_exit	1.0/14		// rate of leaving isolation
-%var: k_retest	1.0/14		// rate of allowing retesting
-%var: k_flu	1.0/365		// rate of getting the flu, once per year
-%var: k_death   1.0/14          // rate of dying from critical illness
-%var: d_flu	7		// duration of flu
-%var: p_flu	d_flu*k_flu // prevalence of flu
-%var: theta	thetaS + thetaI - thetaS*thetaI
-%var: m		0.1*N		// rate of manufacturing tests
-%var: s		1.0		// specificity - true negatives per negative
-%var: r_low	0.6		// recall - true positives per positives for low viral load
-%var: r_high	0.98		// recall - true positives per positives for high viral load
-%var: load_low	0.5		// fraction of infections with low viral load
-%var: ifr       0.005           // infection fatality rate
+%var: N            10000    // total population
+%var: beta         0.034    // probability of infection from contact
+%var: c            6.5      // contact rate
+%var: k_pro        1.0/4    // progression from exposed to prodromic
+%var: k_inf        1.0      // progression from prodromic to full disease
+%var: p_asym       0.5      // probability of being asymptomatic
+%var: p_sym        1.0-p_asym  // probability of being symptomatic
+%var: k_rem        1.0/7    // removal by recovery or death
+%var: k_iso        12       // rate of isolation -- within 2 hours
+%var: k_exit       1.0/14   // rate of leaving isolation
+%var: k_retest     1.0/14   // rate of allowing retesting
+%var: k_flu        1.0/365  // rate of getting the flu, once per year
+%var: k_death      1.0/14   // rate of dying from critical illness
+%var: d_flu        7        // duration of flu
+%var: p_flu        d_flu*k_flu // prevalence of flu
+%var: theta        thetaS + thetaI - thetaS*thetaI
+%var: m            0.1*N    // rate of manufacturing tests
+%var: s	           1.0      // specificity - true negatives per negative
+%var: r            0.98	    // recall - true positives per positives for high viral load
+%var: ifr          0.005    // infection fatality rate
 
 ////
 //// These parameters are set in specific scenario files
 ////
 // %var: p_iso     1.0      // fraction of population prone to self-isolating
-// %var: beta      0.034    // probability of infection from contact
-// %var: beta_low  beta     // infectiousness for low viral load people
-// %var: beta_high beta     // infectiousness for high viral load people
+
 // %var: k_result  1.0      // time to get test result
 // %var: thetaS    0.0      // rate of surveillance testing
 // %var: thetaI    1.0      // rate of testing of isolated population
@@ -56,7 +53,7 @@
 //   - f infected with the flu, or not
 //   - i prone to self-isolation or not
 //   - o outcome - recovered or dying
-%agent: P(x{s e i r} c{p a s} v{l h} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n} o{r c d})
+%agent: P(x{s e i r} c{p a s} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n} o{r c d})
 // tests are discrete entities and may be scarce, when being used,
 // they are bound to an individual, and are used or not
 %agent: T(u{y n})
@@ -70,15 +67,11 @@
 ////
 
 // 1 - contact rules for unconfined individuals with the covid
-'infection_low'   P(x{s}, q{n}), P(x{i}, v{l}, q{n}), . ->
-                  P(x{e}, q{n}), P(x{i}, v{l}, q{n}), C(x{e})   @ beta_low*c/N
-'infection_high'  P(x{s}, q{n}), P(x{i}, v{h}, q{n}), . ->
-                  P(x{e}, q{n}), P(x{i}, v{h}, q{n}), C(x{e})   @ beta_high*c/N
+'infection'   P(x{s}, q{n}), P(x{i}, q{n}), . ->
+              P(x{e}, q{n}), P(x{i}, q{n}), C(x{e})   @ beta*c/N
 
-'lucky_low'       P(x{s}, q{n}), P(x{i}, v{l}, q{n}), . ->
-                  P(x{s}, q{n}), P(x{i}, v{l}, q{n}), C(x{s})   @ (1-beta_high)*c/N
-'lucky_high'      P(x{s}, q{n}), P(x{i}, v{h}, q{n}), . ->
-                  P(x{s}, q{n}), P(x{i}, v{h}, q{n}), C(x{s})   @ (1-beta_high)*c/N
+'lucky'       P(x{s}, q{n}), P(x{i}, q{n}), . ->
+              P(x{s}, q{n}), P(x{i}, q{n}), C(x{s})   @ (1-beta)*c/N
 
 'exposed'     P(x{e}, q{n}), P(x{i}, q{n}), . ->
               P(x{e}, q{n}), P(x{i}, q{n}), C(x{e})   @ c/N
@@ -94,16 +87,13 @@
 
 // 2 - progression of individuals to infectiousness. exposed individuals
 //     become infectious, at first prodromic, and should test positively
-'prog_pro_low'   P(x{e/i}, c{#/p}, v{#/l}, t{n/y})  @ load_low*k_pro
-'prog_pro_high'  P(x{e/i}, c{#/p}, v{#/h}, t{n/y})  @ (1-load_low)*k_pro
+'prog_pro'   P(x{e/i}, c{#/p}, t{n/y})  @ k_pro
 
 // 3 - progression to asymptomatic for a fraction of prodromic individuals
-'prog_asym_low'  P(x{i}, c{p/a}, v{l}) @ k_inf*p_asym*(1-p_low)
-'prog_asym_high' P(x{i}, c{p/a}, v{h}) @ k_inf*p_asym*(1-p_high)
+'prog_asym'  P(x{i}, c{p/a}) @ k_inf*p_asym
 
 // 4 - progression to symptomatic for the remainder
-'prog_sym_low'    P(x{i}, c{p/s}, v{l}, s{#/y}) @ k_inf*(1-p_asym)*p_low
-'prog_sym_high'   P(x{i}, c{p/s}, v{h}, s{#/y}) @ k_inf*(1-p_asym)*p_high
+'prog_sym'   P(x{i}, c{p/s}, s{#/y}) @ k_inf*(1-p_asym)
 
 // 5 - removal of asymptomatic individuals, no longer test positively
 'rem_asym'    P(x{i/r}, c{a}, t{y/n}, o{#/r}) @ k_rem
@@ -132,12 +122,10 @@
 'isolated'    P(q{y}, r{x}, t[.]), T(u[.]{n}) -> P(q{y}, r{x}, t[1]), T(u[1]{y}) @ thetaI
 
 // 3 - test results, true negatives and positives
-'test_tp_low'   P(t[_]{y}, v{l}, r{x/y}) @ r_low*k_result
-'test_fn_low'   P(t[_]{y}, v{l}, r{x/n}) @ (1-r_low)*k_result
-'test_tp_high'  P(t[_]{y}, v{h}, r{x/y}) @ r_high*k_result
-'test_fn_high'  P(t[_]{y}, v{h}, r{x/n}) @ (1-r_high)*k_result
-'test_tn'       P(t[_]{n}, r{x/n}) @ s*k_result
-'test_fp'       P(t[_]{n}, r{x/y}) @ (1-s)*k_result
+'test_tp'     P(t[_]{y}, r{x/y}) @ r*k_result
+'test_fn'     P(t[_]{y}, r{x/n}) @ (1-r)*k_result
+'test_tn'     P(t[_]{n}, r{x/n}) @ s*k_result
+'test_fp'     P(t[_]{n}, r{x/y}) @ (1-s)*k_result
 
 // 4 - allow for retesting after a time, release the test
 'retest'      P(t[1/.], r{#/x}), T(u[1/.]) @ k_retest

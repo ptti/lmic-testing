@@ -53,7 +53,7 @@
 //   - f infected with the flu, or not
 //   - i prone to self-isolation or not
 //   - o outcome - recovered or dying
-%agent: P(x{s e i r} c{p a s} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n} o{r c d})
+%agent: P(x{s e i r} c{p a s} s{y n} t{y n} r{x y n} q{y n} f{y n} i{y n} o{r c d} v{=0 / += 10})
 // tests are discrete entities and may be scarce, when being used,
 // they are bound to an individual, and are used or not
 %agent: T(u{y n})
@@ -90,23 +90,30 @@
 'prog_pro'   P(x{e/i}, c{#/p}, t{n/y})  @ k_pro
 
 // 3 - progression to asymptomatic for a fraction of prodromic individuals
-'prog_asym'  P(x{i}, c{p/a}) @ k_inf*p_asym
+'prog_asym'  P(x{i}, c{p/a}, s{#/n}) @ k_inf*p_asym
 
 // 4 - progression to symptomatic for the remainder
 'prog_sym'   P(x{i}, c{p/s}, s{#/y}) @ k_inf*(1-p_asym)
 
 // 5 - removal of asymptomatic individuals, no longer test positively
-'rem_asym'    P(x{i/r}, c{a}, t{y/n}, o{#/r}) @ k_rem
+'rem_asym'   P(x{i/r}, c{a}, t{y/n}, o{#/r}) @ k_rem
 // 6 - removal of symptomatic individuals, no longer test positively, and recover
-'rem_sym_r'   P(x{i/r}, c{s}, t{y/n}, s{y/n}, o{#/r}) @ (1-ifr/p_sym) * k_rem
+'rem_sym_r'  P(x{i/r}, c{s}, t{y/n}, s{y/n}, o{#/r}) @ (1-ifr/p_sym) * k_rem
 // 7 - removal of symptomatic individuals who will not recover and remain critically ill
-'rem_sym_c'   P(x{i/r}, c{s}, s{y}, o{#/c}) @ ifr/p_sym*k_rem
+'rem_sym_c'  P(x{i/r}, c{s}, s{y}, o{#/c}) @ ifr/p_sym*k_rem
 
 // 7 - development and clearing of endemic flu symptoms
-'flu_dev'     P(f{n}, s{n}) <-> P(f{y}, s{y}) @ k_flu, 1/d_flu
+'flu_dev'    P(f{n}, s{n}) <-> P(f{y}, s{y}) @ k_flu, 1/d_flu
 
 // 8 - progression to death for those that do not recover
-'death'       P(o{c/d}) @ k_death
+'death'      P(o{c/d}) @ k_death
+
+// 9 - viral load clock, tick up quickly during prodromic phase
+'clock_pro'  P(x{i}, c{p}, v{=vl / += 1}) @ 2
+// 10 - viral load clock, tick down slowly if asymptomatic
+'clock_asym' P(x{i}, c{a}, v{=vl / -= 1}) @ 0.5
+// 11 - viral load clock, tick down slowly if symptomatic
+'clock_sym'  P(x{i}, c{s}, v{=vl / -= 1}) @ 0.5
 
 ////
 //// II. Rules relating to testing
@@ -122,8 +129,8 @@
 'isolated'    P(q{y}, r{x}, t[.]), T(u[.]{n}) -> P(q{y}, r{x}, t[1]), T(u[1]{y}) @ thetaI
 
 // 3 - test results, true negatives and positives
-'test_tp'     P(t[_]{y}, r{x/y}) @ r*k_result
-'test_fn'     P(t[_]{y}, r{x/n}) @ (1-r)*k_result
+'test_tp'     P(t[_]{y}, r{x/y}, v{=vl}) @ 0.1*vl*k_result
+'test_fn'     P(t[_]{y}, r{x/n}, v{=vl}) @ (1-0.1*vl)*k_result
 'test_tn'     P(t[_]{n}, r{x/n}) @ s*k_result
 'test_fp'     P(t[_]{n}, r{x/y}) @ (1-s)*k_result
 
@@ -209,7 +216,7 @@
 // initially susceptible
 %var: INIT_S N - INIT_I
 
-%init: INIT_I*p_iso     P(x{i}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{y})
-%init: INIT_I*(1-p_iso) P(x{i}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{n})
-%init: INIT_S*p_iso     P(x{s}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{y})
-%init: INIT_S*(1-p_iso) P(x{s}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{n})
+%init: INIT_I*p_iso     P(x{i}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{y}, o{r}, v{=0})
+%init: INIT_I*(1-p_iso) P(x{i}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{n}, o{r}, v{=0})
+%init: INIT_S*p_iso     P(x{s}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{y}, o{r}, v{=0})
+%init: INIT_S*(1-p_iso) P(x{s}, c{p}, s{n}, t{n}, r{x}, q{n}, f{n}, i{n}, o{r}, v{=0})

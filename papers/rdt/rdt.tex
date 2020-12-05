@@ -1,5 +1,15 @@
 \documentclass{amsart}
 \usepackage{marginnote}
+\usepackage{tikz}
+\usepackage{epi}
+\usepackage{lshtm}
+
+\colorlet{S}{LSHTMBlue}
+\colorlet{E}{LSHTMPurple}
+\colorlet{Ip}{LSHTMYellow}
+\colorlet{I}{LSHTMOrange}
+\colorlet{R}{LSHTMGreen}
+\colorlet{D}{black}
 
 \title{Use of rapid diagnostic tests}
 
@@ -7,6 +17,34 @@
 
 \section{Methods}
 
+\begin{figure}
+  \begin{tikzpicture}
+    \node[agent,fill=S!20] (S) at (0,0) { $P_{S}$ };
+    \node[agent,fill=E!20] (E) at (2,0) { $P_{E}$ };
+    \node[agent,fill=Ip!20] (Ip) at (4,0) { $P_{I,c(P)}$ };
+    \node[agent,fill=I!30] (Ia) at (6,1) { $P_{I,c(A)}$ };
+    \node[agent,fill=I!40] (Is) at (6,-1) { $P_{I,c(S)}$ };
+    \node[agent,fill=I!50] (Ic) at (8,-2) { $P_{I,c(S),o(C)}$ };
+    \node[agent,fill=R!20] (R) at (10,1) { $P_{R}$ };
+    \node[agent,fill=D!20] (D) at (10,-1) { $P_{o(D)}$ };
+
+    \path[draw,->] (S) -- (E);
+    \path[draw,->] (E) -- (Ip);
+    \path[draw,->] (Ip) -- (Ia);
+    \path[draw,->] (Ip) -- (Is);
+    \path[draw,->] (Ia) -- (R);
+    \path[draw,->] (Is) -- (Ic);
+    \path[draw,->] (Is) -- (R);
+    \path[draw,->] (Ic) -- (R);
+    \path[draw,->] (Ic) -- (D);
+  \end{tikzpicture}
+\end{figure}
+
+
+\subsection{Natural history}
+
+
+\subsection{Calibration}
 We begin by establishing a baseline infectiousness, $\beta$, which we will
 subsequently fix. We do this by simulating three weeks of the exponential growth
 phase of an unmitigated epidemic similar to what occurred in the UK and
@@ -14,7 +52,20 @@ elsewhere in the early stages of the COVID-19 pandemic. We know that in the
 before times the average contact rate between individuals in the UK was
 approximately 12 per person per day. We therefore fix $c = 12$. We believe that
 the basic reproduction number at that time in that epidemic was approximately 3.
-We therefore fit $\beta$ under these conditions.
-\marginnote{\textbf{Assumption:} We can establish baseline infectiousness for
-  this model with a contact rate of 12 and a basic reproduction number of 3.}
+We simulate a sufficiently large population of $10^5$ individuals of whom $10^2$
+are initially infectious, this size being chosen so that the epidemic does not
+leave the exponential growth regime in the first 21 days. We therefore fit
+$\beta$ under these conditions. \marginnote{\textbf{Assumption:} We can
+  establish baseline infectiousness for   this model with a contact rate of 12
+  and a basic reproduction number of 3.} We obtain a mean value for $\beta$ of
+0.037 with a standard deviation of less than $10^{-5}$.
+
+Next, we check this by producing a model with a basic reproduction number of one
+half the above, $R(0) = 1.5$. We fix $\beta$ to the value that we have found and
+allow the contact rate to vary. As we would expect from the analytical
+calculation for the mean-field approximation of this model, we find a value for
+$c$ of 5.99 with a standard deviation of $2\times 10^{-4}$ or, essentially 6.
+
+
+
 \end{document}
